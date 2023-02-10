@@ -78,3 +78,46 @@ app.post("/product", async (req, res) => {
     });
   }
 });
+// get data
+app.get("/product", async (req, res) => {
+  try {
+    const result = await product.find();
+    if (result) {
+      res.status(201).send(result);
+    } else {
+      res.status(201).send({
+        message: "product is not found.",
+      });
+    }
+  } catch (error) {
+    res.status(500).send({
+      message: error.message,
+    });
+  }
+});
+// get specific data
+app.get("/product/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const result = await product.findOne({ _id: id }).select({
+      title: 1,
+      _id: 0,
+    });
+    if (result) {
+      res.status(201).send({
+        success: true,
+        message: "Result is found",
+        data: result,
+      });
+    } else {
+      res.status(201).send({
+        success: false,
+        message: "product is not found.",
+      });
+    }
+  } catch (error) {
+    res.status(500).send({
+      message: error.message,
+    });
+  }
+});
