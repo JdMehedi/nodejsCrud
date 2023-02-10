@@ -156,3 +156,36 @@ app.delete("/delete/product/:id", async (req, res) => {
     });
   }
 });
+//update product
+app.put("/update/product/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const result = await product.updateOne({ _id: id },{$set:{price:300}});
+    if (result){
+      if (result.modifiedCount != 0){
+        console.log("object", result);
+        res.status(201).send({
+          success: true,
+          message: "product updated successfully.",
+          data: result,
+        });
+      }else{
+        res.status(201).send({
+          success: false,
+          message: "Product id is not found.",
+          data: result,
+        });
+      }
+    } else{
+      res.status(201).send({
+        success: false,
+        message: "product is not found.",
+        data: result,
+      });
+    }
+  } catch (error) {
+    res.status(500).send({
+      message: error.message,
+    });
+  }
+});
