@@ -86,7 +86,10 @@ app.get("/products", async (req, res) => {
     let result = [];
     if (price) {
       // specific data
-      result = await product.find({ price: { $gt: price } });
+      // result = await product.find({ price: { $gt: price } });
+      result = await product.find({
+        $or: [{ price: { $lt: price } }, { price: { $gt: price } }],
+      });
     } else {
       //all data
       result = await product.find({ price: { $gt: 12 } });
