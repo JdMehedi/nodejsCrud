@@ -79,10 +79,20 @@ app.post("/product", async (req, res) => {
   }
 });
 // get data
-app.get("/product", async (req, res) => {
+app.get("/products", async (req, res) => {
   try {
-    const result = await product.find();
-    if (result) {
+    // take price from request body
+    const price = req.query.price;
+    let result = [];
+    if (price) {
+      // specific data
+      result = await product.find({ price: { $gt: price } });
+    } else {
+      //all data
+      result = await product.find({ price: { $gt: 12 } });
+    }
+
+    if (result.length > 0) {
       res.status(201).send(result);
     } else {
       res.status(201).send({
@@ -95,6 +105,7 @@ app.get("/product", async (req, res) => {
     });
   }
 });
+
 // get specific data
 app.get("/product/:id", async (req, res) => {
   try {
