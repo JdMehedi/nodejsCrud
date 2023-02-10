@@ -81,7 +81,7 @@ app.post("/product", async (req, res) => {
 // get data
 app.get("/products", async (req, res) => {
   try {
-    // take price from request body
+    // Take price from request body
     const price = req.query.price;
     let result = [];
     if (price) {
@@ -89,13 +89,29 @@ app.get("/products", async (req, res) => {
       result = await product.find({ price: { $gt: price } });
     } else {
       //all data
-      result = await product.find({ price: { $gt: 12 } });
+      // result = await product.find({ price: { $gte: 12 } }).countDocuments();
+      result = await product.find({ price: { $gte: 12 } }).sort({ price: 1 });
     }
 
-    if (result.length > 0) {
-      res.status(201).send(result);
+    if (result) {
+      // for comparison result sometimes has empty that means the length of result is 0 so that need that check
+      if (result.length > 0) {
+        res.status(201).send({
+          success: true,
+          message: "Result is found",
+          data: result,
+        });
+      } else {
+        res.status(201).send({
+          success: true,
+          message: "Result is found",
+          data: result,
+        });
+      }
     } else {
       res.status(201).send({
+        success: false,
+        data: result,
         message: "product is not found.",
       });
     }
