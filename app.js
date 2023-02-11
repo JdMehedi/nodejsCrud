@@ -1,47 +1,15 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-const session = require("express-session");
+const model = require("./model/product");
 const app = express();
-
+console.log(model.schema);
 // To receive request data need to be declared express json
 app.use(express.json());
 
 // To receive form data need to be declared express urlencoded
 app.use(express.urlencoded({ extended: true }));
-const Schema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: [true, "The title is required."],
-    minlength: [8, "too short"],
-    // custom validation
-    validate: {
-      validator: function (v) {
-        return v.length == 10;
-      },
-      message: (data) => `${data.value} is not a valid title.`,
-    },
-  },
-  price: {
-    type: Number,
-    min: [10, "Must be at least 10, got {VALUE}"],
-    max: [200],
-  },
-  phone: {
-    type: String,
-    validate: {
-      validator: function (v) {
-        return /\d{3}-\d{3}-\d{4}/.test(v);
-      },
-      message: (data) => `${data.value} is not a standard format`,
-    },
-  },
-  description: String,
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+
 
 // This is another way to connect db
 
@@ -69,7 +37,8 @@ const connectionToDB = async () => {
 const port = process.env.PORT || 5002;
 
 // create model
-const product = mongoose.model("products", Schema);
+const Product = mongoose.model("products", model.schema);
+
 app.get("/", (req, res) => {
   res.send("Hello world");
 });
@@ -83,7 +52,7 @@ app.post("/product", async (req, res) => {
   try {
     const title = req.body.title;
     // get data from request body
-    const newProduct = new product({
+    const newProduct = new Product({
       title: req.body.title,
       price: req.body.price,
       description: req.body.description,
