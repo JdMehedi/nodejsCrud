@@ -12,9 +12,30 @@ app.use(express.urlencoded({ extended: true }));
 const Schema = new mongoose.Schema({
   title: {
     type: String,
-    required: true,
+    required: [true, "The title is required."],
+    minlength: [8, "too short"],
+    // custom validation
+    validate: {
+      validator: function (v) {
+        return v.length == 10;
+      },
+      message: (data) => `${data.value} is not a valid title.`,
+    },
   },
-  price: Number,
+  price: {
+    type: Number,
+    min: [10, "Must be at least 10, got {VALUE}"],
+    max: [200],
+  },
+  phone: {
+    type: String,
+    validate: {
+      validator: function (v) {
+        return /\d{3}-\d{3}-\d{4}/.test(v);
+      },
+      message: (data) => `${data.value} is not a standard format`,
+    },
+  },
   description: String,
   createdAt: {
     type: Date,
@@ -49,8 +70,6 @@ const port = process.env.PORT || 5002;
 
 // create model
 const product = mongoose.model("products", Schema);
-console.log("product: ", product);
-
 app.get("/", (req, res) => {
   res.send("Hello world");
 });
@@ -63,13 +82,14 @@ app.listen(port, async () => {
 app.post("/product", async (req, res) => {
   try {
     const title = req.body.title;
-    console.log(req.body);
     // get data from request body
     const newProduct = new product({
       title: req.body.title,
       price: req.body.price,
       description: req.body.description,
+      phone: req.body.phone,
     });
+
     const proData = await newProduct.save();
     res.status(201).send(proData);
   } catch (error) {
@@ -135,9 +155,7 @@ app.get("/product/:id", async (req, res) => {
 app.delete("/delete/product/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    console.log("object", id);
     const result = await product.deleteOne({ _id: id });
-    console.log(result);
     if (result.deletedCount != 0) {
       res.status(201).send({
         success: true,
@@ -160,23 +178,26 @@ app.delete("/delete/product/:id", async (req, res) => {
 app.put("/update/product/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    const result = await product.updateOne({ _id: id },{$set:{price:300}});
-    if (result){
-      if (result.modifiedCount != 0){
-        console.log("object", result);
+    const result = await product.updateOne(
+      { _id: id },
+      { $set: { description: req.body.description } }
+    );
+
+    if (result) {
+      if (result.modifiedCount != 0) {
         res.status(201).send({
           success: true,
           message: "product updated successfully.",
           data: result,
         });
-      }else{
+      } else {
         res.status(201).send({
           success: false,
           message: "Product id is not found.",
           data: result,
         });
       }
-    } else{
+    } else {
       res.status(201).send({
         success: false,
         message: "product is not found.",
